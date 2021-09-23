@@ -41,7 +41,7 @@ static std::string type_string(VarsType type)
 	default:
 		break;
 	}
-	return NULL;
+	return "";
 }
 
 class VarsGlobal
