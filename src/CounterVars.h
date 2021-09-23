@@ -1,5 +1,5 @@
-#ifndef __COUNTVARS_H__
-#define __COUNTVARS_H__
+#ifndef _COUNTERVARS_H_
+#define _COUNTERVARS_H_
 
 #include <string>
 #include <unordered_map>
@@ -12,14 +12,17 @@ template<typename TYPE>
 class CounterVars : public Vars
 {
 public:
-	BasicVars<TYPE> *add(const std::string &name);
+	BasicVars<TYPE> *add(const std::map<std::string, std::string>& labels);
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
 
-	size_t get_size() override { return this->gauge_data.size(); }
-	void *get_data() override { return &(this->gauge_data); }
+	size_t get_size() override { return this->data.size(); }
+	void *get_data() override { return &(this->data); }
 	void increase() override { /* TODO */ }
 	void decrease() override { /* TODO */ }
+
+	static bool label_to_str(const std::map<std::string, std::string>& labels,
+							 std::string& str);
 
 public:
 	Vars *create() override
@@ -28,40 +31,40 @@ public:
 	}
 
 	CounterVars(const std::string& name, const std::string& help) :
-		Vars(name, help, RPC_VARS_COUNTER)
+		Vars(name, help, VARS_COUNTER)
 	{
 		VarsLocal::get_instance()->add(this->name, this);
 	}
 
 	~CounterVars()
 	{
-		for (auto it = this->gauge_data.begin();
-			 it != this->gauge_data.end(); it++)
+		for (auto it = this->data.begin();
+			 it != this->data.end(); it++)
 		{
 			delete it->second;
 		}
 	}
-/*
-	CounterVars(CounterVars<TYPE>&& move) = default;
-	CounterVars(const CounterVars<TYPE>&) = delete;
-	CounterVars& operator=(CounterVars<TYPE>&& move) = default;
-	CounterVars& operator=(const CounterVars<TYPE>&) = delete;
-*/
+
+
 private:
-	std::unordered_map<std::string, BasicVars<TYPE> *> gauge_data;
+	std::unordered_map<std::string, BasicVars<TYPE> *> data;
 };
 
 template<typename TYPE>
-BasicVars<TYPE> *CounterVars<TYPE>::add(const std::string &name)
+BasicVars<TYPE> *CounterVars<TYPE>::add(const std::map<std::string,
+													   std::string>& labels)
 {
-	
-	auto it = this->gauge_data.find(name);
+	std::string label_str;
+	if (!this->label_to_str(labels, label_str))
+		return NULL;
+
+	auto it = this->data.find(label_str);
 	BasicVars<TYPE> *var;
 
-	if (it == this->gauge_data.end())
+	if (it == this->data.end())
 	{
-		var = new BasicVars<TYPE>(name, "");
-		this->gauge_data.insert(std::make_pair(name, var));
+		var = new BasicVars<TYPE>(label_str, "");
+		this->data.insert(std::make_pair(label_str, var));
 	}
 	else
 		var = it->second;
@@ -77,12 +80,12 @@ bool CounterVars<TYPE>::reduce(const void *ptr, size_t)
 
 	for (auto it = data->begin(); it != data->end(); it++)
 	{
-		auto my_it = this->gauge_data.find(it->first);
+		auto my_it = this->data.find(it->first);
 
-		if (my_it == this->gauge_data.end())
+		if (my_it == this->data.end())
 		{
 			BasicVars<TYPE> *var = new BasicVars<TYPE>(it->first, "");
-			this->gauge_data.insert(std::make_pair(it->first, var));
+			this->data.insert(std::make_pair(it->first, var));
 		}
 		else
 			my_it->second->reduce(it->second->get_data(),
@@ -97,14 +100,30 @@ std::string CounterVars<TYPE>::collect()
 {
 	std::string ret;
 
-	for (auto it = this->gauge_data.begin();
-		 it != this->gauge_data.end(); it++)
+	for (auto it = this->data.begin();
+		 it != this->data.end(); it++)
 	{
 		ret += this->name + "{" + it->first + "}" + " " +
 			   it->second->data_str() + "\n";
 	}
 
 	return std::move(ret);
+}
+
+template<typename TYPE>
+bool CounterVars<TYPE>::label_to_str(const std::map<std::string, std::string>& labels,
+									 std::string& str)
+{
+	for (auto it = labels.begin(); it != labels.end(); it++)
+	{
+		fprintf(stderr, "label is : %s %s\n", it->first.c_str(), it->second.c_str());
+		if (it != labels.begin())
+			str += ",";
+		//TODO: check label name regex is "[a-zA-Z_:][a-zA-Z0-9_:]*"
+		str += it->first + "=\"" + it->second + "\"";
+	}
+
+	return true;
 }
 
 } // namespace prometheus

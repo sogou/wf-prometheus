@@ -1,5 +1,5 @@
-#ifndef _GAUGEVARS_H__
-#define _GAUGEVARS_H__
+#ifndef _GAUGEVARS_H_
+#define _GAUGEVARS_H_
 
 #include <utility>
 #include <string>
@@ -34,7 +34,7 @@ public:
 	virtual void init() { this->data = 0; }
 
 	BasicVars(const std::string& name, const std::string& help) :
-		Vars(name, help, RPC_VARS_GAUGE)
+		Vars(name, help, VARS_GAUGE)
 	{
 		this->init();
 	}
@@ -50,7 +50,7 @@ public:
 		return this->name + " " + this->data_str() + "\n";
 	}
 
-	inline std::string data_str()
+	std::string data_str()
 	{
 		return std::to_string(this->data);
 	}
@@ -58,9 +58,7 @@ public:
 	~BasicVars() {}
 
 	BasicVars(BasicVars<TYPE>&& move) = default;
-	BasicVars(const BasicVars<TYPE>&) = delete;
 	BasicVars& operator=(BasicVars<TYPE>&& move) = default;
-	BasicVars& operator=(const BasicVars<TYPE>&) = delete;
 
 private:
 	TYPE data;

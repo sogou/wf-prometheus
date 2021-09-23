@@ -8,25 +8,25 @@
 #include "GaugeVars.h"
 #include "CounterVars.h"
 
-#ifndef _PROMETHEUS_EXPORTER_H__
-#define _PROMETHEUS_EXPORTER_H__
+#ifndef _PROMETHEUS_EXPORTER_H_
+#define _PROMETHEUS_EXPORTER_H_
 
 namespace prometheus {
 
-void prometheus_pull(WFHttpTask *task)
+static void pull(WFHttpTask *task)
 {
 	fprintf(stderr, "process() uri=%s\n", task->get_req()->get_request_uri());
 
 	std::string body;
-	VarsLocal::counter<int>("request_method")->add("method=\"POST\"")->increase();
-	VarsLocal::counter<int>("request_method")->add("method=\"POST\"")->increase();
-	VarsLocal::counter<int>("request_method")->add("method=\"GET\"")->increase();
-	body += VarsGlobal::expose();
+	VarsLocal::counter<int>("request_method")->add({{"protocol", "tcp"}, {"method", "post"}})->increase();
+	VarsLocal::counter<int>("request_method")->add({{"protocol", "tcp"}, {"method", "post"}})->increase();
+	VarsLocal::counter<int>("request_method")->add({{"protocol", "tcp"}, {"method", "get"}})->increase();
 
 	if (strcmp(task->get_req()->get_request_uri(), "/metrics"))
 		return;
 
 	VarsLocal::var("workflow_metrics_count")->increase();
+	body += VarsGlobal::expose();
 	task->get_resp()->append_output_body(std::move(body));
 }
 
@@ -34,7 +34,7 @@ class PrometheusExporter : public WFHttpServer
 {
 public:
 	PrometheusExporter() :
-		WFHttpServer(prometheus_pull)
+		WFHttpServer(pull)
 	{
 	}
 };

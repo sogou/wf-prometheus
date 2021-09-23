@@ -1,5 +1,5 @@
-#ifndef _VARS_H__
-#define _VARS_H__
+#ifndef _VARS_H_
+#define _VARS_H_
 
 #include <utility>
 #include <mutex>
@@ -20,23 +20,23 @@ class CounterVars;
 
 enum VarsType
 {
-	RPC_VARS_GAUGE		=	0,
-	RPC_VARS_COUNTER	=	1,
-	RPC_VARS_HISTOGRAM	=	2,
-	RPC_VARS_SUMMARY	=	3
+	VARS_GAUGE		=	0,
+	VARS_COUNTER	=	1,
+	VARS_HISTOGRAM	=	2,
+	VARS_SUMMARY	=	3
 };
 
 static std::string type_string(VarsType type)
 {
 	switch (type)
 	{
-	case RPC_VARS_GAUGE:
+	case VARS_GAUGE:
 		return "gauge";
-	case RPC_VARS_COUNTER:
+	case VARS_COUNTER:
 		return "counter";
-	case RPC_VARS_HISTOGRAM:
+	case VARS_HISTOGRAM:
 		return "histogram";
-	case RPC_VARS_SUMMARY:
+	case VARS_SUMMARY:
 		return "summary";
 	default:
 		break;
@@ -107,7 +107,7 @@ public:
 		return static_cast<CounterVars<TYPE> *>(VarsLocal::var(name));
 	}
 
-	~VarsLocal();
+	virtual ~VarsLocal();
 
 private:
 	VarsLocal()
