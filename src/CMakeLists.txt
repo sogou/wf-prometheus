@@ -5,7 +5,9 @@ find_package(OpenSSL REQUIRED)
 find_package(workflow REQUIRED)
 
 set(SRC
-	Vars.cc
+	Var.cc
+	Exporter.cc
+	VarFactory.cc
 )
 
 add_library(${PROJECT_NAME} STATIC ${SRC})

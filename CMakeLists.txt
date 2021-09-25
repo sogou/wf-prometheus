@@ -23,10 +23,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
 
 set(INCLUDE_HEADERS
-    src/Vars.h
-    src/GaugeVars.h
-    src/CounterVars.h
-    src/Exporter.h
+	src/Var.h
+	src/GaugeVar.h
+	src/CounterVar.h
+	src/Exporter.h
+	src/VarFactory.h
 )
 
 add_custom_target(
