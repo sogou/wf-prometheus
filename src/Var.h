@@ -1,3 +1,21 @@
+/*
+  Copyright (c) 2021 Sogou, Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Author: Li Yingxin (liyingxin@sogou-inc.com)
+*/
+
 #ifndef _VARS_H_
 #define _VARS_H_
 
@@ -9,16 +27,16 @@
 
 namespace prometheus {
 
-class Vars;
-class VarsLocal;
+class Var;
+class VarLocal;
 
 template<typename TYPE>
-class GaugeVars;
+class GaugeVar;
 
 template<typename TYPE>
-class CounterVars;
+class CounterVar;
 
-enum VarsType
+enum VarType
 {
 	VARS_GAUGE		=	0,
 	VARS_COUNTER	=	1,
@@ -26,7 +44,7 @@ enum VarsType
 	VARS_SUMMARY	=	3
 };
 
-static std::string type_string(VarsType type)
+static std::string type_string(VarType type)
 {
 	switch (type)
 	{
@@ -44,45 +62,43 @@ static std::string type_string(VarsType type)
 	return "";
 }
 
-class VarsGlobal
+class VarGlobal
 {
 public:
-	static VarsGlobal *get_instance()
+	static VarGlobal *get_instance()
 	{
-		static VarsGlobal kInstance;
+		static VarGlobal kInstance;
 		return &kInstance;
 	}
 
-	void add(VarsLocal *var)
+	void add(VarLocal *var)
 	{
 		this->mutex.lock();
 		this->local_vars.push_back(var);
 		this->mutex.unlock();
 	}
 
-	Vars *find(const std::string& name);
-
-	//	void expose(std::string& name) { }
-	static std::string expose();
+	Var *find(const std::string& name);
 
 private:
-	VarsGlobal() { }
+	VarGlobal() { }
 
 private:
 	std::mutex mutex;
-	std::vector<VarsLocal *> local_vars;
+	std::vector<VarLocal *> local_vars;
+	friend class VarFactory;
 };
 
-class VarsLocal
+class VarLocal
 {
 public:
-	static VarsLocal *get_instance()
+	static VarLocal *get_instance()
 	{
-		static thread_local VarsLocal kInstance;
+		static thread_local VarLocal kInstance;
 		return &kInstance;
 	}
 
-	void add(std::string name, Vars *var)
+	void add(std::string name, Var *var)
 	{
 		this->mutex.lock();
 		const auto it = this->vars.find(name);
@@ -93,43 +109,30 @@ public:
 		this->mutex.unlock();
 	}
 
-	static Vars *var(const std::string& name);
-
-	template<typename TYPE>
-	static GaugeVars<TYPE> *gauge(const std::string& name)
-	{
-		return static_cast<GaugeVars<TYPE> *>(VarsLocal::var(name));
-	}
-
-	template<typename TYPE>
-	static CounterVars<TYPE> *counter(const std::string& name)
-	{
-		return static_cast<CounterVars<TYPE> *>(VarsLocal::var(name));
-	}
-
-	virtual ~VarsLocal();
+	virtual ~VarLocal();
 
 private:
-	VarsLocal()
+	VarLocal()
 	{
-		VarsGlobal::get_instance()->add(this);
+		VarGlobal::get_instance()->add(this);
 	}
 
 private:
 	std::mutex mutex;
-	std::unordered_map<std::string, Vars *> vars;
-	friend class VarsGlobal;
+	std::unordered_map<std::string, Var *> vars;
+	friend class VarGlobal;
+	friend class VarFactory;
 };
 
-class Vars
+class Var
 {
 public:
 	const std::string& get_name() const { return this->name; }
 	const std::string& get_help() const { return this->help; }
-	VarsType get_type() const { return this->type; }
+	VarType get_type() const { return this->type; }
 	const std::string get_type_str() const { return type_string(this->type); }
 
-	virtual Vars *create() = 0;
+	virtual Var *create() = 0;
 	virtual std::string collect() = 0;
 	virtual void increase() = 0;
 	virtual void decrease() = 0;
@@ -138,7 +141,7 @@ public:
 	virtual void *get_data() = 0;
 
 public:
-	Vars(std::string name, std::string help, VarsType type) :
+	Var(std::string name, std::string help, VarType type) :
 		name(std::move(name)),
 		help(std::move(help)),
 		type(type)
@@ -146,7 +149,7 @@ public:
 		this->format_name();
 	}
 
-	virtual ~Vars() {}
+	virtual ~Var() {}
 
 private:
 	void format_name();
@@ -154,7 +157,7 @@ private:
 protected:
 	std::string name;
 	std::string help;
-	VarsType type;
+	VarType type;
 };
 
 } // namespace prometheus

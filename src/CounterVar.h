@@ -1,18 +1,38 @@
+/*
+  Copyright (c) 2021 Sogou, Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Author: Li Yingxin (liyingxin@sogou-inc.com)
+*/
+
 #ifndef _COUNTERVARS_H_
 #define _COUNTERVARS_H_
 
+#include <map>
 #include <string>
 #include <unordered_map>
-#include "Vars.h"
-#include "GaugeVars.h"
+#include "Var.h"
+#include "GaugeVar.h"
 
 namespace prometheus {
 
 template<typename TYPE>
-class CounterVars : public Vars
+class CounterVar : public Var
 {
 public:
-	BasicVars<TYPE> *add(const std::map<std::string, std::string>& labels);
+	using LABEL_MAP = std::map<std::string, std::string>;
+	GaugeVar<TYPE> *add(const LABEL_MAP& labels);
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
 
@@ -21,22 +41,20 @@ public:
 	void increase() override { /* TODO */ }
 	void decrease() override { /* TODO */ }
 
-	static bool label_to_str(const std::map<std::string, std::string>& labels,
-							 std::string& str);
+	static bool label_to_str(const LABEL_MAP& labels, std::string& str);
 
 public:
-	Vars *create() override
+	Var *create() override
 	{
-		return new CounterVars<TYPE>(this->name, this->help);
+		return new CounterVar<TYPE>(this->name, this->help);
 	}
 
-	CounterVars(const std::string& name, const std::string& help) :
-		Vars(name, help, VARS_COUNTER)
+	CounterVar(const std::string& name, const std::string& help) :
+		Var(name, help, VARS_COUNTER)
 	{
-		VarsLocal::get_instance()->add(this->name, this);
 	}
 
-	~CounterVars()
+	~CounterVar()
 	{
 		for (auto it = this->data.begin();
 			 it != this->data.end(); it++)
@@ -45,25 +63,23 @@ public:
 		}
 	}
 
-
 private:
-	std::unordered_map<std::string, BasicVars<TYPE> *> data;
+	std::unordered_map<std::string, GaugeVar<TYPE> *> data;
 };
 
 template<typename TYPE>
-BasicVars<TYPE> *CounterVars<TYPE>::add(const std::map<std::string,
-													   std::string>& labels)
+GaugeVar<TYPE> *CounterVar<TYPE>::add(const LABEL_MAP& labels)
 {
 	std::string label_str;
 	if (!this->label_to_str(labels, label_str))
 		return NULL;
 
 	auto it = this->data.find(label_str);
-	BasicVars<TYPE> *var;
+	GaugeVar<TYPE> *var;
 
 	if (it == this->data.end())
 	{
-		var = new BasicVars<TYPE>(label_str, "");
+		var = new GaugeVar<TYPE>(label_str, "");
 		this->data.insert(std::make_pair(label_str, var));
 	}
 	else
@@ -73,10 +89,10 @@ BasicVars<TYPE> *CounterVars<TYPE>::add(const std::map<std::string,
 }
 
 template<typename TYPE>
-bool CounterVars<TYPE>::reduce(const void *ptr, size_t)
+bool CounterVar<TYPE>::reduce(const void *ptr, size_t)
 {
-	std::unordered_map<std::string, BasicVars<TYPE> *> *data;
-	data = (std::unordered_map<std::string, BasicVars<TYPE> *> *)ptr;
+	std::unordered_map<std::string, GaugeVar<TYPE> *> *data;
+	data = (std::unordered_map<std::string, GaugeVar<TYPE> *> *)ptr;
 
 	for (auto it = data->begin(); it != data->end(); it++)
 	{
@@ -84,7 +100,7 @@ bool CounterVars<TYPE>::reduce(const void *ptr, size_t)
 
 		if (my_it == this->data.end())
 		{
-			BasicVars<TYPE> *var = new BasicVars<TYPE>(it->first, "");
+			GaugeVar<TYPE> *var = new GaugeVar<TYPE>(it->first, "");
 			this->data.insert(std::make_pair(it->first, var));
 		}
 		else
@@ -96,7 +112,7 @@ bool CounterVars<TYPE>::reduce(const void *ptr, size_t)
 }
 
 template<typename TYPE>
-std::string CounterVars<TYPE>::collect()
+std::string CounterVar<TYPE>::collect()
 {
 	std::string ret;
 
@@ -111,12 +127,10 @@ std::string CounterVars<TYPE>::collect()
 }
 
 template<typename TYPE>
-bool CounterVars<TYPE>::label_to_str(const std::map<std::string, std::string>& labels,
-									 std::string& str)
+bool CounterVar<TYPE>::label_to_str(const LABEL_MAP& labels, std::string& str)
 {
 	for (auto it = labels.begin(); it != labels.end(); it++)
 	{
-		fprintf(stderr, "label is : %s %s\n", it->first.c_str(), it->second.c_str());
 		if (it != labels.begin())
 			str += ",";
 		//TODO: check label name regex is "[a-zA-Z_:][a-zA-Z0-9_:]*"
