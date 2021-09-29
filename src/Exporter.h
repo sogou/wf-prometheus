@@ -33,14 +33,12 @@ class PrometheusExporter : public WFHttpServer
 {
 public:
 	PrometheusExporter() :
-		WFHttpServer(std::bind(&PrometheusExporter::pull,
-							   this,
-							   std::placeholders::_1))
+		WFHttpServer(PrometheusExporter::pull)
 	{
 	}
 
 private:
-	void pull(WFHttpTask *task);
+	static void pull(WFHttpTask *task);
 };
 
 } // namespace prometheus

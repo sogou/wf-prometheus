@@ -29,6 +29,7 @@ void PrometheusExporter::pull(WFHttpTask *task)
 	VarFactory::counter<int>("request_method")->add({{"protocol", "tcp"}, {"method", "post"}})->increase();
 	VarFactory::counter<int>("request_method")->add({{"protocol", "tcp"}, {"method", "post"}})->increase();
 	VarFactory::counter<int>("request_method")->add({{"protocol", "tcp"}, {"method", "get"}})->increase();
+	VarFactory::histogram<double>("request_latency")->observe(rand() % 11);
 
 	if (strcmp(task->get_req()->get_request_uri(), "/metrics"))
 		return;

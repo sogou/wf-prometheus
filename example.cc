@@ -22,16 +22,16 @@
 #include "workflow/WFServer.h"
 #include "workflow/WFHttpServer.h"
 #include "workflow/WFFacilities.h"
-#include "workflow-prometheus/Exporter.h"
+#include "wfprometheus/Exporter.h"
 
 using namespace prometheus;
 
 int main()
 {
-//	GaugeVar<int> gauge("workflow_metrics_count", "help info 1");
-//	CounterVar<int> count("request_method", "help info 2");
 	VarFactory::create_gauge<int>("workflow_metrics_count", "help info 1");
 	VarFactory::create_counter<int>("request_method", "help info 2");
+	VarFactory::create_histogram<double>("request_latency", "help info 3",
+										{0.1, 1.0, 10.0});
 
 	PrometheusExporter server;
 	if (server.start(8080) == 0)
