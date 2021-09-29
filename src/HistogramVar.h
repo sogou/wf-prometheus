@@ -36,8 +36,13 @@ public:
 
 	size_t get_size() override { return this->bucket_counts.size(); }
 	void *get_data() override { return this; }
-	void increase() override { /* TODO */ }
-	void decrease() override { /* TODO */ }
+
+	TYPE get_sum() const { return this->sum; }
+	size_t get_count() const { return this->count; }
+	const std::vector<size_t> *get_bucket_counts() const
+	{
+		return &this->bucket_counts;
+	}
 
 public:
 	Var *create() override
@@ -61,13 +66,6 @@ public:
 		this->count = 0;
 	}
 
-	TYPE get_sum() const { return this->sum; }
-	size_t get_count() const { return this->count; }
-	const std::vector<size_t> *get_bucket_counts() const
-	{
-		return &this->bucket_counts;
-	}
-
 private:
 	std::vector<TYPE> bucket_boundaries;
 	std::vector<size_t> bucket_counts;
@@ -79,13 +77,15 @@ template<typename TYPE>
 void HistogramVar<TYPE>::observe(const TYPE value)
 {
 	//TODO: binary search
-	size_t idx = 0;
-	for (; idx < this->bucket_boundaries.size(); idx++)
+	size_t i = 0;
+
+	for (; i < this->bucket_boundaries.size(); i++)
 	{
-		if (value <= this->bucket_boundaries[idx])
+		if (value <= this->bucket_boundaries[i])
 			break;
 	}
-	this->bucket_counts[idx]++;
+
+	this->bucket_counts[i]++;
 	this->sum += value;
 	this->count++;
 }
@@ -113,7 +113,6 @@ template<typename TYPE>
 std::string HistogramVar<TYPE>::collect()
 {
 	std::string ret;
-
 	size_t i = 0;
 	size_t current = 0;
 
