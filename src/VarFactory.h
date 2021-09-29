@@ -19,6 +19,7 @@
 #include "Var.h"
 #include "GaugeVar.h"
 #include "CounterVar.h"
+#include "HistogramVar.h"
 
 #ifndef _VARFACTORY_H_
 #define _VARFACTORY_H_
@@ -36,11 +37,18 @@ public:
 	static CounterVar<TYPE> *create_counter(const std::string& name,
 											const std::string& help);
 
+	template<typename TYPE>
+	static HistogramVar<TYPE> *create_histogram(const std::string& name,
+												const std::string& help,
+												const std::vector<TYPE>& bucket);
+
 	// thread local api
 	template<typename TYPE>
 	static GaugeVar<TYPE> *gauge(const std::string& name);
 	template<typename TYPE>
 	static CounterVar<TYPE> *counter(const std::string& name);
+	template<typename TYPE>
+	static HistogramVar<TYPE> *histogram(const std::string& name);
 
 	static Var *var(const std::string& name);
 
@@ -68,6 +76,16 @@ CounterVar<TYPE> *VarFactory::create_counter(const std::string& name,
 }
 
 template<typename TYPE>
+HistogramVar<TYPE> *VarFactory::create_histogram(const std::string& name,
+												 const std::string& help,
+												 const std::vector<TYPE>& bucket)
+{
+	HistogramVar<TYPE> *histogram = new HistogramVar<TYPE>(name, help, bucket);
+	VarLocal::get_instance()->add(name, histogram);
+	return histogram;
+}
+
+template<typename TYPE>
 GaugeVar<TYPE> *VarFactory::gauge(const std::string& name)
 {
 	return static_cast<GaugeVar<TYPE> *>(VarFactory::var(name));
@@ -77,6 +95,12 @@ template<typename TYPE>
 CounterVar<TYPE> *VarFactory::counter(const std::string& name)
 {
 	return static_cast<CounterVar<TYPE> *>(VarFactory::var(name));
+}
+
+template<typename TYPE>
+HistogramVar<TYPE> *VarFactory::histogram(const std::string& name)
+{
+	return static_cast<HistogramVar<TYPE> *>(VarFactory::var(name));
 }
 
 } // namespace prometheus

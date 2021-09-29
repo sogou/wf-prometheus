@@ -1,4 +1,4 @@
-# workflow-prometheus
+# wfprometheus
 
 This is a light prometheus exporter using workflow HTTP server. This project is currently in the development stage, and the first version will be released soon.
 

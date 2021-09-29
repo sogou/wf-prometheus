@@ -29,8 +29,8 @@ template<typename TYPE>
 class GaugeVar : public Var
 {
 public:
-	void increase() override { ++this->data; }
-	void decrease() override { --this->data; }
+	void increase() { ++this->data; }
+	void decrease() { --this->data; }
 	size_t get_size() override { return sizeof(TYPE); }
 	void *get_data() override { return &(this->data); }
 

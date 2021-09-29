@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 
 project(
-    workflow-prometheus
+    wf-prometheus
     VERSION 1.0
     LANGUAGES CXX
 )
@@ -26,6 +26,7 @@ set(INCLUDE_HEADERS
 	src/Var.h
 	src/GaugeVar.h
 	src/CounterVar.h
+	src/HistogramVar.h
 	src/Exporter.h
 	src/VarFactory.h
 )
@@ -66,5 +67,6 @@ add_executable(example example.cc)
 find_library(LIBRT rt)
 find_package(OpenSSL REQUIRED)
 find_package(workflow REQUIRED)
+
 target_link_libraries(example ${PROJECT_NAME} workflow)
 

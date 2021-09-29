@@ -33,13 +33,12 @@ class CounterVar : public Var
 public:
 	using LABEL_MAP = std::map<std::string, std::string>;
 	GaugeVar<TYPE> *add(const LABEL_MAP& labels);
+
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
 
 	size_t get_size() override { return this->data.size(); }
 	void *get_data() override { return &(this->data); }
-	void increase() override { /* TODO */ }
-	void decrease() override { /* TODO */ }
 
 	static bool label_to_str(const LABEL_MAP& labels, std::string& str);
 
@@ -71,11 +70,12 @@ template<typename TYPE>
 GaugeVar<TYPE> *CounterVar<TYPE>::add(const LABEL_MAP& labels)
 {
 	std::string label_str;
+	GaugeVar<TYPE> *var;
+
 	if (!this->label_to_str(labels, label_str))
 		return NULL;
 
 	auto it = this->data.find(label_str);
-	GaugeVar<TYPE> *var;
 
 	if (it == this->data.end())
 	{
