@@ -22,7 +22,7 @@
 #include "workflow/WFServer.h"
 #include "workflow/WFHttpServer.h"
 #include "workflow/WFFacilities.h"
-#include "wfprometheus/Exporter.h"
+#include "wf-prometheus/Exporter.h"
 
 using namespace prometheus;
 
