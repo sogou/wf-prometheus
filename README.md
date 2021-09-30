@@ -1,4 +1,4 @@
-# wfprometheus
+# wf-prometheus
 
 This is a light prometheus exporter using workflow HTTP server. This project is currently in the development stage, and the first version will be released soon.
 
@@ -33,6 +33,14 @@ workflow_metrics_count 79
 # TYPE request_method counter
 request_method{method="POST"} 150
 request_method{method="GET"} 75
+# HELP request_latency help info 3
+# TYPE request_latency histogram
+request_latency_bucket{le="0.100000"} 2
+request_latency_bucket{le="1.000000"} 4
+request_latency_bucket{le="10.000000"} 23
+request_latency_bucket{le="+Inf"} 23
+request_latency_sum 117.000000
+request_latency_count 23
 ```
 
 ### Check by Prometheus
@@ -49,14 +57,14 @@ It`s very simple to make your own ``Exporter``, try it !!!
 using namespace prometheus;                                                        
                                                                                    
 int main()                                                                         
-{                                                                                  
-    GaugeVars<int> gauge("workflow_metrics_count", "help info");                   
-                                                                                   
+{
+    VarFactory::create_gauge<int>("workflow_metrics_count", "help info");
+                                                                             
     WFHttpServer server([](WFHttpTask *task) {                                     
-        VarsLocal::var("workflow_metrics_count")->increase();                      
+        VarFactory::gauge<int>("workflow_metrics_count")->increase();                      
         task->get_resp()->append_output_body(VarsGlobal::expose());                
-    });                                                                            
-                                                                                   
+    });
+
     if (server.start(8080) == 0)                                                   
     {                                                                              
         getchar();                                                                 
