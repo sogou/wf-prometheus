@@ -30,6 +30,7 @@ class HistogramVar : public Var
 {
 public:
 	void observe(const TYPE value);
+	bool observe_multi(const std::vector<TYPE>& multi, const TYPE sum);
 
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
@@ -76,7 +77,6 @@ private:
 template<typename TYPE>
 void HistogramVar<TYPE>::observe(const TYPE value)
 {
-	//TODO: binary search
 	size_t i = 0;
 
 	for (; i < this->bucket_boundaries.size(); i++)
@@ -88,6 +88,23 @@ void HistogramVar<TYPE>::observe(const TYPE value)
 	this->bucket_counts[i]++;
 	this->sum += value;
 	this->count++;
+}
+
+template<typename TYPE>
+bool HistogramVar<TYPE>::observe_multi(const std::vector<TYPE>& multi,
+									   const TYPE sum)
+{
+	if (multi.size() != this->bucket_counts.size())
+		return false;
+
+	for (size_t i = 0; i < multi.size(); i ++)
+	{
+		this->bucket_counts[i] += multi[i];
+		this->count += multi[i];
+	}
+	this->sum += sum;
+
+	return true;
 }
 
 template<typename TYPE>
