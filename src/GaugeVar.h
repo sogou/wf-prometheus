@@ -16,8 +16,8 @@
   Author: Li Yingxin (liyingxin@sogou-inc.com)
 */
 
-#ifndef _GAUGEVARS_H_
-#define _GAUGEVARS_H_
+#ifndef _GAUGEVAR_H_
+#define _GAUGEVAR_H_
 
 #include <utility>
 #include <string>
@@ -52,7 +52,7 @@ public:
 	virtual void init() { this->data = 0; }
 
 	GaugeVar(const std::string& name, const std::string& help) :
-		Var(name, help, VARS_GAUGE)
+		Var(name, help, VAR_GAUGE)
 	{
 		this->init();
 	}

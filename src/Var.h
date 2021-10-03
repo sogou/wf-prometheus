@@ -16,8 +16,8 @@
   Author: Li Yingxin (liyingxin@sogou-inc.com)
 */
 
-#ifndef _VARS_H_
-#define _VARS_H_
+#ifndef _VAR_H_
+#define _VAR_H_
 
 #include <utility>
 #include <mutex>
@@ -38,23 +38,23 @@ class CounterVar;
 
 enum VarType
 {
-	VARS_GAUGE		=	0,
-	VARS_COUNTER	=	1,
-	VARS_HISTOGRAM	=	2,
-	VARS_SUMMARY	=	3
+	VAR_GAUGE		=	0,
+	VAR_COUNTER	=	1,
+	VAR_HISTOGRAM	=	2,
+	VAR_SUMMARY	=	3
 };
 
 static std::string type_string(VarType type)
 {
 	switch (type)
 	{
-	case VARS_GAUGE:
+	case VAR_GAUGE:
 		return "gauge";
-	case VARS_COUNTER:
+	case VAR_COUNTER:
 		return "counter";
-	case VARS_HISTOGRAM:
+	case VAR_HISTOGRAM:
 		return "histogram";
-	case VARS_SUMMARY:
+	case VAR_SUMMARY:
 		return "summary";
 	default:
 		break;

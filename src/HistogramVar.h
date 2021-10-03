@@ -16,8 +16,8 @@
   Author: Li Yingxin (liyingxin@sogou-inc.com)
 */
 
-#ifndef _HISTOGRAMVARS_H_
-#define _HISTOGRAMVARS_H_
+#ifndef _HISTOGRAMVAR_H_
+#define _HISTOGRAMVAR_H_
 
 #include <vector>
 #include <string> 
@@ -54,7 +54,7 @@ public:
 
 	HistogramVar(const std::string& name, const std::string& help,
 				 const std::vector<TYPE>& bucket) :
-		Var(name, help, VARS_HISTOGRAM),
+		Var(name, help, VAR_HISTOGRAM),
 		bucket_boundaries(bucket),
 		bucket_counts(bucket.size() + 1)
 	{

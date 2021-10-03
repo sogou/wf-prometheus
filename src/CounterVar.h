@@ -16,8 +16,8 @@
   Author: Li Yingxin (liyingxin@sogou-inc.com)
 */
 
-#ifndef _COUNTERVARS_H_
-#define _COUNTERVARS_H_
+#ifndef _COUNTERVAR_H_
+#define _COUNTERVAR_H_
 
 #include <map>
 #include <string>
@@ -49,7 +49,7 @@ public:
 	}
 
 	CounterVar(const std::string& name, const std::string& help) :
-		Var(name, help, VARS_COUNTER)
+		Var(name, help, VAR_COUNTER)
 	{
 	}
 
