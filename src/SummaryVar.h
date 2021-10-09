@@ -62,12 +62,12 @@ public:
 			   const std::chrono::milliseconds max_age, int age_bucket) :
 		Var(name, help, VAR_SUMMARY),
 		quantiles(quantile),
-		max_age(max_age),
-		age_buckets(age_bucket),
 		quantile_values(quantile, max_age, age_bucket)
 	{
-		this->init();
+		this->max_age = max_age;
+		this->age_buckets = age_bucket;
 		this->quantile_out.resize(quantile.size(), 0);
+		this->init();
 	}
 
 	virtual void init()
