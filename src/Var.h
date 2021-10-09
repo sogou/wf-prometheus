@@ -30,18 +30,12 @@ namespace prometheus {
 class Var;
 class VarLocal;
 
-template<typename TYPE>
-class GaugeVar;
-
-template<typename TYPE>
-class CounterVar;
-
 enum VarType
 {
 	VAR_GAUGE		=	0,
-	VAR_COUNTER	=	1,
+	VAR_COUNTER		=	1,
 	VAR_HISTOGRAM	=	2,
-	VAR_SUMMARY	=	3
+	VAR_SUMMARY		=	3
 };
 
 static std::string type_string(VarType type)

@@ -75,6 +75,9 @@ std::string VarFactory::expose()
 				 "\n" + var->collect();
 	}
 
+	for (it = tmp.begin(); it != tmp.end(); it++)
+		delete it->second;
+
 	return output;
 }
 
