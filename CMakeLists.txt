@@ -27,6 +27,9 @@ set(INCLUDE_HEADERS
 	src/GaugeVar.h
 	src/CounterVar.h
 	src/HistogramVar.h
+	src/TimeWindowQuantiles.h
+	src/CKMSQuantiles.h
+	src/SummaryVar.h
 	src/Exporter.h
 	src/VarFactory.h
 )

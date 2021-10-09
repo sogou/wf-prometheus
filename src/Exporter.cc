@@ -35,8 +35,10 @@ void PrometheusExporter::pull(WFHttpTask *task)
 		return;
 
 	VarFactory::gauge<int>("workflow_metrics_count")->increase();
-	body += VarFactory::expose();
+	body = VarFactory::expose();
 	task->get_resp()->append_output_body(std::move(body));
+
+	VarFactory::summary<double>("response_body_size")->observe(body.length());
 }
 
 } // namespace prometheus

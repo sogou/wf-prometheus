@@ -8,14 +8,16 @@ set(SRC
 	Var.cc
 	Exporter.cc
 	VarFactory.cc
+	CKMSQuantiles.cc
+	TimeWindowQuantiles.cc
 )
 
 add_library(${PROJECT_NAME} STATIC ${SRC})
 
 install(
-    TARGETS ${PROJECT_NAME}
-    ARCHIVE
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    COMPONENT devel
+	TARGETS ${PROJECT_NAME}
+	ARCHIVE
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	COMPONENT devel
 )
 

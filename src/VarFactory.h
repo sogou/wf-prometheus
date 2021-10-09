@@ -20,6 +20,7 @@
 #include "GaugeVar.h"
 #include "CounterVar.h"
 #include "HistogramVar.h"
+#include "SummaryVar.h"
 
 #ifndef _VARFACTORY_H_
 #define _VARFACTORY_H_
@@ -42,13 +43,30 @@ public:
 												const std::string& help,
 												const std::vector<TYPE>& bucket);
 
+	template<typename TYPE>
+	static SummaryVar<TYPE> *create_summary(const std::string& name,
+											const std::string& help,
+											const std::vector<struct Quantile>& quantile);
+
+	template<typename TYPE>
+	static SummaryVar<TYPE> *create_summary(const std::string& name,
+											const std::string& help,
+											const std::vector<struct Quantile>& quantile,
+											const std::chrono::milliseconds max_age,
+											int age_bucket);
+
 	// thread local api
 	template<typename TYPE>
 	static GaugeVar<TYPE> *gauge(const std::string& name);
+
 	template<typename TYPE>
 	static CounterVar<TYPE> *counter(const std::string& name);
+
 	template<typename TYPE>
 	static HistogramVar<TYPE> *histogram(const std::string& name);
+
+	template<typename TYPE>
+	static SummaryVar<TYPE> *summary(const std::string& name);
 
 	static Var *var(const std::string& name);
 
@@ -67,8 +85,9 @@ GaugeVar<TYPE> *VarFactory::create_gauge(const std::string& name,
 }
 
 template<typename TYPE>
-CounterVar<TYPE> *VarFactory::create_counter(const std::string& name,
-											 const std::string& help)
+CounterVar<TYPE> *
+VarFactory::create_counter(const std::string& name,
+						   const std::string& help)
 {
 	CounterVar<TYPE> *counter = new CounterVar<TYPE>(name, help);
 	VarLocal::get_instance()->add(name, counter);
@@ -76,13 +95,41 @@ CounterVar<TYPE> *VarFactory::create_counter(const std::string& name,
 }
 
 template<typename TYPE>
-HistogramVar<TYPE> *VarFactory::create_histogram(const std::string& name,
-												 const std::string& help,
-												 const std::vector<TYPE>& bucket)
+HistogramVar<TYPE> *
+VarFactory::create_histogram(const std::string& name,
+							 const std::string& help,
+							 const std::vector<TYPE>& bucket)
 {
 	HistogramVar<TYPE> *histogram = new HistogramVar<TYPE>(name, help, bucket);
 	VarLocal::get_instance()->add(name, histogram);
 	return histogram;
+}
+
+template<typename TYPE>
+SummaryVar<TYPE> *
+VarFactory::create_summary(const std::string& name,
+						   const std::string& help,
+						   const std::vector<struct Quantile>& quantile)
+{
+	SummaryVar<TYPE> *summary = new SummaryVar<TYPE>(name, help, quantile,
+													 std::chrono::seconds(DEFAULT_MAX_AGE),
+													 DEFAULT_AGE_BUCKET);
+	VarLocal::get_instance()->add(name, summary);
+	return summary;
+}
+
+template<typename TYPE>
+SummaryVar<TYPE> *
+VarFactory::create_summary(const std::string& name,
+						   const std::string& help,
+						   const std::vector<struct Quantile>& quantile,
+						   const std::chrono::milliseconds max_age,
+						   int age_bucket)
+{
+	SummaryVar<TYPE> *summary = new SummaryVar<TYPE>(name, help, quantile,
+													 max_age, age_bucket);
+	VarLocal::get_instance()->add(name, summary);
+	return summary;
 }
 
 template<typename TYPE>
@@ -101,6 +148,12 @@ template<typename TYPE>
 HistogramVar<TYPE> *VarFactory::histogram(const std::string& name)
 {
 	return static_cast<HistogramVar<TYPE> *>(VarFactory::var(name));
+}
+
+template<typename TYPE>
+SummaryVar<TYPE> *VarFactory::summary(const std::string& name)
+{
+	return static_cast<SummaryVar<TYPE> *>(VarFactory::var(name));
 }
 
 } // namespace prometheus
