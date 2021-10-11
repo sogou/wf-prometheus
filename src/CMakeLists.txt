@@ -9,7 +9,6 @@ set(SRC
 	Exporter.cc
 	VarFactory.cc
 	CKMSQuantiles.cc
-	TimeWindowQuantiles.cc
 )
 
 add_library(${PROJECT_NAME} STATIC ${SRC})
