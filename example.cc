@@ -33,8 +33,8 @@ int main()
 	VarFactory::create_histogram<double>("request_latency", "help info 3",
 										{0.1, 1.0, 10.0});
 
-	VarFactory::create_summary<double>("response_body_size", "help info 4",
-										{{0.5, 0.05}, {0.9, 0.01}});
+	VarFactory::create_summary<int>("response_body_size", "help info 4",
+									{{0.5, 0.05}, {0.9, 0.01}});
 
 	PrometheusExporter server;
 	if (server.start(8080) == 0)

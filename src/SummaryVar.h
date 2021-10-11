@@ -44,7 +44,7 @@ public:
 
 	TYPE get_sum() const { return this->sum; }
 	size_t get_count() const { return this->count; }
-	const TimeWindowQuantiles *get_quantile_values() const
+	const TimeWindowQuantiles<TYPE> *get_quantile_values() const
 	{
 		return &this->quantile_values;
 	}
@@ -82,7 +82,7 @@ private:
 	size_t count;
 	std::chrono::milliseconds max_age;
 	int age_buckets;
-	TimeWindowQuantiles quantile_values;
+	TimeWindowQuantiles<TYPE> quantile_values;
 	std::vector<TYPE> quantile_out;
 };
 
@@ -102,7 +102,7 @@ bool SummaryVar<TYPE>::reduce(const void *ptr, size_t sz)
 
 	SummaryVar<TYPE> *data = (SummaryVar<TYPE> *)ptr;
 
-	const TimeWindowQuantiles *src = data->get_quantile_values();
+	const TimeWindowQuantiles<TYPE> *src = data->get_quantile_values();
 
 	for (size_t i = 0; i< sz; i ++)
 		this->quantile_out[i] += src->get(this->quantiles[i].quantile);
