@@ -110,8 +110,7 @@ bool SummaryVar<TYPE>::reduce(const void *ptr, size_t sz)
 	for (size_t i = 0; i< sz; i ++)
 	{
 		TYPE get_val = src->get(this->quantiles[i].quantile, available_count);
-		this->quantile_out[i] = this->quantile_out[i] +
-								get_val * available_count;
+		this->quantile_out[i] += get_val * available_count;
 		this->available_count[i] += available_count;
 	}
 
