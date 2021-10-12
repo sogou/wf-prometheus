@@ -38,7 +38,8 @@ void PrometheusExporter::pull(WFHttpTask *task)
 	body = VarFactory::expose();
 	task->get_resp()->append_output_body(std::move(body));
 
-	VarFactory::summary<int>("response_body_size")->observe(body.length());
+	for (int i = 1; i < 11; i ++)
+		VarFactory::summary<int>("response_body_size")->observe(body.length() / i);
 }
 
 } // namespace prometheus
