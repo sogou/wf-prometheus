@@ -67,6 +67,7 @@ public:
 		this->max_age = max_age;
 		this->age_buckets = age_bucket;
 		this->quantile_out.resize(quantile.size(), 0);
+		this->available_count.resize(quantile.size(), 0);
 		this->init();
 	}
 
@@ -84,6 +85,7 @@ private:
 	int age_buckets;
 	TimeWindowQuantiles<TYPE> quantile_values;
 	std::vector<TYPE> quantile_out;
+	std::vector<size_t> available_count;
 };
 
 template<typename TYPE>
@@ -103,9 +105,15 @@ bool SummaryVar<TYPE>::reduce(const void *ptr, size_t sz)
 	SummaryVar<TYPE> *data = (SummaryVar<TYPE> *)ptr;
 
 	const TimeWindowQuantiles<TYPE> *src = data->get_quantile_values();
+	size_t available_count;
 
 	for (size_t i = 0; i< sz; i ++)
-		this->quantile_out[i] += src->get(this->quantiles[i].quantile);
+	{
+		TYPE get_val = src->get(this->quantiles[i].quantile, available_count);
+		this->quantile_out[i] = this->quantile_out[i] +
+								get_val * available_count;
+		this->available_count[i] += available_count;
+	}
 
 	this->sum += data->get_sum();
 	this->count += data->get_count();
@@ -126,15 +134,18 @@ std::string SummaryVar<TYPE>::collect()
 		if (this->quantile_out[i] == std::numeric_limits<TYPE>::quiet_NaN())
 			ret += "NaN";
 		else
-			ret += std::to_string(this->quantile_out[i]);
+			ret += std::to_string(this->quantile_out[i] /
+								  this->available_count[i]);
 		ret += "\n";
 	}
 
 	ret += this->name + "_sum " + std::to_string(this->sum) + "\n";
 	ret += this->name + "_count " + std::to_string(this->count) + "\n";
 
+	this->quantile_out.clear();
+	this->available_count.clear();
+
 	return std::move(ret);
-	return "";
 }
 
 } // namespace prometheus

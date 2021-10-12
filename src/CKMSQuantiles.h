@@ -42,6 +42,7 @@ private:
 	void insert(TYPE value);
 	TYPE get(double q);
 	void reset();
+	size_t get_count() const { return this->count; }
 
  private:
 	double allowableError(int rank);

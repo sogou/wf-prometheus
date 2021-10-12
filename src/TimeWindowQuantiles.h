@@ -23,6 +23,7 @@ public:
 						Clock::duration max_age_seconds, int age_buckets);
 
 	TYPE get(double q) const;
+	TYPE get(double q, size_t& available_count) const;
 	void insert(TYPE value);
 
 private:
@@ -40,8 +41,8 @@ private:
 
 template<typename TYPE>
 TimeWindowQuantiles<TYPE>::TimeWindowQuantiles(const std::vector<Quantile>& q,
-										 const Clock::duration max_age,
-										 const int age_buckets) :
+											   const Clock::duration max_age,
+											   const int age_buckets) :
 	quantiles(q),
 	ckms_quantiles(age_buckets, CKMSQuantiles<TYPE>(this->quantiles)),
 	rotation_interval(max_age / age_buckets)
@@ -54,6 +55,14 @@ template<typename TYPE>
 TYPE TimeWindowQuantiles<TYPE>::get(double q) const
 {
 	CKMSQuantiles<TYPE>& current_bucket = this->rotate();
+	return current_bucket.get(q);
+}
+
+template<typename TYPE>
+TYPE TimeWindowQuantiles<TYPE>::get(double q, size_t& available_count) const
+{
+	CKMSQuantiles<TYPE>& current_bucket = this->rotate();
+	available_count = current_bucket.get_count();
 	return current_bucket.get(q);
 }
 
