@@ -129,8 +129,8 @@ public:
 	virtual Var *create() = 0;
 	virtual std::string collect() = 0;
 	virtual bool reduce(const void *ptr, size_t sz) = 0;
-	virtual size_t get_size() = 0;
-	virtual void *get_data() = 0;
+	virtual size_t get_size() const = 0;
+	virtual const void *get_data() const = 0;
 
 public:
 	Var(std::string name, std::string help, VarType type) :

@@ -37,8 +37,8 @@ public:
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
 
-	size_t get_size() override { return this->data.size(); }
-	void *get_data() override { return &(this->data); }
+	size_t get_size() const override { return this->data.size(); }
+	const void *get_data() const override { return &this->data; }
 
 	static bool label_to_str(const LABEL_MAP& labels, std::string& str);
 

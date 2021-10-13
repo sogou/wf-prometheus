@@ -31,8 +31,8 @@ class GaugeVar : public Var
 public:
 	void increase() { ++this->data; }
 	void decrease() { --this->data; }
-	size_t get_size() override { return sizeof(TYPE); }
-	void *get_data() override { return &(this->data); }
+	size_t get_size() const override { return sizeof(TYPE); }
+	const void *get_data() const override { return &this->data; }
 
 	virtual TYPE get() const { return this->data; }
 	virtual void set(TYPE var) { this->data = var; }
