@@ -28,19 +28,25 @@ may get the following data, which is consistent with Prometheus data model.
 ```sh
 # HELP workflow_metrics_count help info 1
 # TYPE workflow_metrics_count gauge
-workflow_metrics_count 79
+workflow_metrics_count 3
 # HELP request_method help info 2
 # TYPE request_method counter
-request_method{method="POST"} 150
-request_method{method="GET"} 75
+request_method{method="post",protocol="tcp"} 4
+request_method{method="get",protocol="tcp"} 2
+# HELP response_body_size help info 4
+# TYPE response_body_size summary
+response_body_size{quantile="0.500000"} 107
+response_body_size{quantile="0.900000"} 250
+response_body_size_sum 4401
+response_body_size_count 20
 # HELP request_latency help info 3
 # TYPE request_latency histogram
-request_latency_bucket{le="0.100000"} 2
-request_latency_bucket{le="1.000000"} 4
-request_latency_bucket{le="10.000000"} 23
-request_latency_bucket{le="+Inf"} 23
-request_latency_sum 117.000000
-request_latency_count 23
+request_latency_bucket{le="0.100000"} 0
+request_latency_bucket{le="1.000000"} 0
+request_latency_bucket{le="10.000000"} 3
+request_latency_bucket{le="+Inf"} 3
+request_latency_sum 22.000000
+request_latency_count 3
 ```
 
 ### Check by Prometheus
