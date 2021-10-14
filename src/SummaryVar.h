@@ -39,12 +39,12 @@ public:
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
 
-	size_t get_size() override { return this->quantiles.size(); }
-	void *get_data() override { return this; }
+	size_t get_size() const override { return this->quantiles.size(); }
+	const void *get_data() const override { return this; }
 
 	TYPE get_sum() const { return this->sum; }
 	size_t get_count() const { return this->count; }
-	const TimeWindowQuantiles<TYPE> *get_quantile_values() const
+	TimeWindowQuantiles<TYPE> *get_quantile_values()
 	{
 		return &this->quantile_values;
 	}
@@ -104,12 +104,13 @@ bool SummaryVar<TYPE>::reduce(const void *ptr, size_t sz)
 
 	SummaryVar<TYPE> *data = (SummaryVar<TYPE> *)ptr;
 
-	const TimeWindowQuantiles<TYPE> *src = data->get_quantile_values();
+	TimeWindowQuantiles<TYPE> *src = data->get_quantile_values();
 	size_t available_count;
+	TYPE get_val;
 
-	for (size_t i = 0; i< sz; i ++)
+	for (size_t i = 0; i < sz; i ++)
 	{
-		TYPE get_val = src->get(this->quantiles[i].quantile, available_count);
+		available_count = src->get(this->quantiles[i].quantile, &get_val);
 		this->quantile_out[i] += get_val * available_count;
 		this->available_count[i] += available_count;
 	}

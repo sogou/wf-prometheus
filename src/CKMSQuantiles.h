@@ -45,8 +45,8 @@ private:
 	size_t get_count() const { return this->count; }
 
  private:
-	double allowableError(int rank);
-	bool insertBatch();
+	double allowable_error(int rank);
+	bool insert_batch();
 	void compress();
 
  private:
@@ -85,7 +85,7 @@ void CKMSQuantiles<TYPE>::insert(TYPE value)
 
  	if (this->buffer_count == this->buffer.size())
 	{
-		this->insertBatch();
+		this->insert_batch();
 		this->compress();
 	}
 }
@@ -93,15 +93,15 @@ void CKMSQuantiles<TYPE>::insert(TYPE value)
 template<typename TYPE>
 TYPE CKMSQuantiles<TYPE>::get(double q)
 {
-	this->insertBatch();
+	this->insert_batch();
 	this->compress();
 
 	if (this->sample.empty())
 		return std::numeric_limits<TYPE>::quiet_NaN();
 
-	int rankMin = 0;
+	int rank_min = 0;
 	const auto desired = static_cast<int>(q * this->count);
-	const auto bound = desired + (allowableError(desired) / 2);
+	const auto bound = desired + (allowable_error(desired) / 2);
 
 	auto it = this->sample.begin();
 	decltype(it) prev;
@@ -112,9 +112,9 @@ TYPE CKMSQuantiles<TYPE>::get(double q)
 		prev = cur;
 		cur = it++;
 
-		rankMin += prev->g;
+		rank_min += prev->g;
 
-		if (rankMin + cur->g + cur->delta > bound)
+		if (rank_min + cur->g + cur->delta > bound)
 			return prev->value;
 	}
 
@@ -130,10 +130,10 @@ void CKMSQuantiles<TYPE>::reset()
 }
 
 template<typename TYPE>
-double CKMSQuantiles<TYPE>::allowableError(int rank)
+double CKMSQuantiles<TYPE>::allowable_error(int rank)
 {
 	auto size = this->sample.size();
-	double minError = size + 1;
+	double min_error = size + 1;
 
 	for (const auto& q : this->quantiles)
 	{
@@ -143,15 +143,15 @@ double CKMSQuantiles<TYPE>::allowableError(int rank)
 		else
 			error = q.v * rank;
 
-		if (error < minError)
-			minError = error;
+		if (error < min_error)
+			min_error = error;
 	}
 
-	return minError;
+	return min_error;
 }
 
 template<typename TYPE>
-bool CKMSQuantiles<TYPE>::insertBatch()
+bool CKMSQuantiles<TYPE>::insert_batch()
 {
 	if (this->buffer_count == 0)
 		return false;
@@ -184,7 +184,7 @@ bool CKMSQuantiles<TYPE>::insertBatch()
 		if (idx - 1 == 0 || idx + 1 == this->sample.size())
 			delta = 0;
 		else
-			delta = static_cast<int>(std::floor(allowableError(idx + 1))) + 1;
+			delta = static_cast<int>(std::floor(allowable_error(idx + 1))) + 1;
 
 		this->sample.emplace(this->sample.begin() + idx, v, 1, delta);
 		this->count++;
@@ -211,7 +211,7 @@ void CKMSQuantiles<TYPE>::compress()
 		next = idx++;
 
 		if (this->sample[prev].g + this->sample[next].g +
-			this->sample[next].delta <= allowableError(idx - 1))
+			this->sample[next].delta <= allowable_error(idx - 1))
 		{
 			this->sample[next].g += this->sample[prev].g;
 			this->sample.erase(this->sample.begin() + prev);

@@ -20,20 +20,20 @@ public:
 	using Clock = std::chrono::steady_clock;
 
 	TimeWindowQuantiles(const std::vector<Quantile>& quantiles,
-						Clock::duration max_age_seconds, int age_buckets);
+						Clock::duration max_age_seconds,
+						int age_buckets);
 
-	TYPE get(double q) const;
-	TYPE get(double q, size_t& available_count) const;
+	size_t get(double quantile, TYPE *value);
 	void insert(TYPE value);
 
 private:
-	CKMSQuantiles<TYPE>& rotate() const;
+	CKMSQuantiles<TYPE>& rotate();
 
 	const std::vector<Quantile>& quantiles;
-	mutable std::vector<CKMSQuantiles<TYPE>> ckms_quantiles;
-	mutable size_t current_bucket;
+	std::vector<CKMSQuantiles<TYPE>> ckms_quantiles;
+	size_t current_bucket;
 
-	mutable Clock::time_point last_rotation;
+	Clock::time_point last_rotation;
 	const Clock::duration rotation_interval;
 };
 
@@ -52,18 +52,12 @@ TimeWindowQuantiles<TYPE>::TimeWindowQuantiles(const std::vector<Quantile>& q,
 }
 
 template<typename TYPE>
-TYPE TimeWindowQuantiles<TYPE>::get(double q) const
+size_t TimeWindowQuantiles<TYPE>::get(double quantile, TYPE *value)
 {
 	CKMSQuantiles<TYPE>& current_bucket = this->rotate();
-	return current_bucket.get(q);
-}
 
-template<typename TYPE>
-TYPE TimeWindowQuantiles<TYPE>::get(double q, size_t& available_count) const
-{
-	CKMSQuantiles<TYPE>& current_bucket = this->rotate();
-	available_count = current_bucket.get_count();
-	return current_bucket.get(q);
+	*value = current_bucket.get(quantile);
+	return current_bucket.get_count();
 }
 
 template<typename TYPE>
@@ -76,7 +70,7 @@ void TimeWindowQuantiles<TYPE>::insert(TYPE value)
 }
 
 template<typename TYPE>
-CKMSQuantiles<TYPE>& TimeWindowQuantiles<TYPE>::rotate() const
+CKMSQuantiles<TYPE>& TimeWindowQuantiles<TYPE>::rotate()
 {
 	auto delta = Clock::now() - this->last_rotation;
 

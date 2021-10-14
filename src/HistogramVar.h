@@ -36,8 +36,8 @@ public:
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
 
-	size_t get_size() override { return this->bucket_counts.size(); }
-	void *get_data() override { return this; }
+	size_t get_size() const override { return this->bucket_counts.size(); }
+	const void *get_data() const override { return this; }
 
 	TYPE get_sum() const { return this->sum; }
 	size_t get_count() const { return this->count; }
@@ -114,7 +114,7 @@ bool HistogramVar<TYPE>::reduce(const void *ptr, size_t sz)
 	if (sz != this->bucket_boundaries.size() + 1)
 		return false;
 
-	HistogramVar<TYPE> *data = (HistogramVar<TYPE> *)ptr;
+	const HistogramVar<TYPE> *data = (const HistogramVar<TYPE> *)ptr;
 	const std::vector<size_t> *src_bucket_counts = data->get_bucket_counts();
 
 	for (size_t i = 0; i < sz; i++)
