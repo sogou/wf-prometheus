@@ -33,6 +33,28 @@ VarLocal::~VarLocal()
 {
 	for (auto it = this->vars.begin(); it != this->vars.end(); it++)
 		delete it->second;
+
+	VarGlobal *global_var = VarGlobal::get_instance();
+
+	global_var->del(this);
+}
+
+void VarGlobal::del(VarLocal *var)
+{
+	this->mutex.lock();
+	for (size_t i = 0; i < this->local_vars.size(); i++)
+	{
+		if (this->local_vars[i] == var)
+		{
+			for (size_t j = i; j < this->local_vars.size(); j++)
+				this->local_vars[j] = this->local_vars[j + 1];
+
+			break;
+		}
+	}
+
+	this->local_vars.resize(this->local_vars.size() - 1);
+	this->mutex.unlock();
 }
 
 Var *VarGlobal::find(const std::string& name)

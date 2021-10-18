@@ -72,6 +72,8 @@ public:
 		this->mutex.unlock();
 	}
 
+	void del(VarLocal *var);
+
 	Var *find(const std::string& name);
 
 private:
