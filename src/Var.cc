@@ -39,7 +39,7 @@ VarLocal::~VarLocal()
 	global_var->del(this);
 }
 
-void VarGlobal::del(VarLocal *var)
+void VarGlobal::del(const VarLocal *var)
 {
 	this->mutex.lock();
 	for (size_t i = 0; i < this->local_vars.size(); i++)
