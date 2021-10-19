@@ -19,28 +19,32 @@ class TimeWindowQuantiles
 public:
 	using Clock = std::chrono::steady_clock;
 
-	TimeWindowQuantiles(const std::vector<Quantile>& quantiles,
-						Clock::duration max_age_seconds,
-						int age_buckets);
-
 	size_t get(double quantile, TYPE *value);
 	void insert(TYPE value);
 
 private:
 	CKMSQuantiles<TYPE>& rotate();
 
-	const std::vector<Quantile>& quantiles;
+	const std::vector<Quantile> *quantiles;
 	std::vector<CKMSQuantiles<TYPE>> ckms_quantiles;
 	size_t current_bucket;
 
 	Clock::time_point last_rotation;
-	const Clock::duration rotation_interval;
+	Clock::duration rotation_interval;
+
+public:
+	TimeWindowQuantiles(const std::vector<Quantile> *quantiles,
+						Clock::duration max_age_seconds,
+						int age_buckets);
+
+	TimeWindowQuantiles(const TimeWindowQuantiles<TYPE>& copy);
+	TimeWindowQuantiles<TYPE>& operator= (const TimeWindowQuantiles<TYPE>& copy);
 };
 
 /////////////// inl
 
 template<typename TYPE>
-TimeWindowQuantiles<TYPE>::TimeWindowQuantiles(const std::vector<Quantile>& q,
+TimeWindowQuantiles<TYPE>::TimeWindowQuantiles(const std::vector<Quantile> *q,
 											   const Clock::duration max_age,
 											   const int age_buckets) :
 	quantiles(q),
@@ -49,6 +53,27 @@ TimeWindowQuantiles<TYPE>::TimeWindowQuantiles(const std::vector<Quantile>& q,
 {
 	this->current_bucket = 0;
 	this->last_rotation = Clock::now();
+}
+
+template<typename TYPE>
+TimeWindowQuantiles<TYPE>::TimeWindowQuantiles(const TimeWindowQuantiles<TYPE>& copy)
+{
+	this->operator= (copy);
+}
+
+template<typename TYPE>
+TimeWindowQuantiles<TYPE>& TimeWindowQuantiles<TYPE>::operator= (const TimeWindowQuantiles<TYPE>& copy)
+{
+	if (this != &copy)
+	{
+		this->quantiles = copy.quantiles;
+		this->ckms_quantiles = copy.ckms_quantiles;
+		this->current_bucket = copy.current_bucket;
+		this->last_rotation = copy.last_rotation;
+		this->rotation_interval = copy.rotation_interval;
+	}
+
+	return *this;
 }
 
 template<typename TYPE>

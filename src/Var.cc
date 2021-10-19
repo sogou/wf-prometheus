@@ -31,12 +31,41 @@ void Var::format_name()
 
 VarLocal::~VarLocal()
 {
+	VarGlobal *global_var = VarGlobal::get_instance();
+
+	global_var->dup(this->vars);
+
 	for (auto it = this->vars.begin(); it != this->vars.end(); it++)
 		delete it->second;
 
-	VarGlobal *global_var = VarGlobal::get_instance();
-
 	global_var->del(this);
+}
+
+void VarGlobal::dup(const std::unordered_map<std::string, Var *>& vars)
+{
+	if (this->local_vars.empty())
+		new VarLocal();
+
+	VarLocal *local = this->local_vars[0];
+	local->mutex.lock();
+
+	std::unordered_map<std::string, Var*>& local_var = local->vars;
+
+	for (auto it = vars.begin(); it != vars.end(); it++)
+	{
+		if (local_var.find(it->first) == local_var.end())
+		{
+			local_var.insert(std::make_pair(it->first,
+											it->second->create(true)));
+		}
+		else
+		{
+			local_var[it->first]->reduce(it->second->get_data(),
+										 it->second->get_size());
+		}
+	}
+
+	local->mutex.unlock();
 }
 
 void VarGlobal::del(const VarLocal *var)

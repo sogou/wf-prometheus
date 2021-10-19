@@ -74,6 +74,7 @@ public:
 
 	void del(const VarLocal *var);
 	Var *find(const std::string& name);
+	void dup(const std::unordered_map<std::string, Var *>& vars);
 
 private:
 	VarGlobal() { }
@@ -127,7 +128,7 @@ public:
 	VarType get_type() const { return this->type; }
 	const std::string get_type_str() const { return type_string(this->type); }
 
-	virtual Var *create() = 0;
+	virtual Var *create(bool with_data) = 0;
 	virtual std::string collect() = 0;
 	virtual bool reduce(const void *ptr, size_t sz) = 0;
 	virtual size_t get_size() const = 0;

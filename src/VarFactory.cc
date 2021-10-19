@@ -33,7 +33,7 @@ Var *VarFactory::var(const std::string& name)
 
 	if (var)
 	{
-		new_var = var->create();
+		new_var = var->create(false);
 		local->add(name, new_var);
 		return new_var;
 	}
@@ -46,7 +46,6 @@ std::string VarFactory::expose()
 	std::string output;
 	std::unordered_map<std::string, Var*> tmp;
 	std::unordered_map<std::string, Var*>::iterator it;
-	std::unordered_map<std::string, Var*>::iterator tmp_it;
 
 	VarGlobal *global_var = VarGlobal::get_instance();
 
@@ -56,9 +55,8 @@ std::string VarFactory::expose()
 		local->mutex.lock();
 		for (it = local->vars.begin(); it != local->vars.end(); it++)
 		{
-			tmp_it = tmp.find(it->first);
-			if (tmp_it == tmp.end())
-				tmp.insert(std::make_pair(it->first, it->second->create()));
+			if (tmp.find(it->first) == tmp.end())
+				tmp.insert(std::make_pair(it->first, it->second->create(true)));
 			else
 				tmp[it->first]->reduce(it->second->get_data(),
 									   it->second->get_size());

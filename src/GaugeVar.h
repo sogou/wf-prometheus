@@ -57,10 +57,14 @@ public:
 		this->init();
 	}
 
-	Var *create() override
+	Var *create(bool with_data) override
 	{
-//		fprintf(stderr, "create() with name %s\n", this->name.c_str());
-		return new GaugeVar<TYPE>(this->name, this->help);
+		GaugeVar *var =  new GaugeVar<TYPE>(this->name, this->help);
+
+		if (with_data)
+			var->data = this->data;
+
+		return var;
 	}
 
 	std::string collect() override
