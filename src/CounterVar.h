@@ -43,9 +43,21 @@ public:
 	static bool label_to_str(const LABEL_MAP& labels, std::string& str);
 
 public:
-	Var *create() override
+	Var *create(bool with_data) override
 	{
-		return new CounterVar<TYPE>(this->name, this->help);
+		CounterVar<TYPE> *var = new CounterVar<TYPE>(this->name, this->help);
+
+		if (with_data)
+		{
+			for (auto it = this->data.begin();
+				 it != this->data.end(); it++)
+			{
+				this->data.insert(std::make_pair(it->first,
+							   (GaugeVar<TYPE> *)it->second->create(true)));
+			}
+		}
+
+		return var;
 	}
 
 	CounterVar(const std::string& name, const std::string& help) :

@@ -47,10 +47,18 @@ public:
 	}
 
 public:
-	Var *create() override
+	Var *create(bool with_data) override
 	{
-		return new HistogramVar<TYPE>(this->name, this->help,
-									  this->bucket_boundaries);
+		HistogramVar *var = new HistogramVar<TYPE>(this->name, this->help,
+												   this->bucket_boundaries);
+		if (with_data)
+		{
+			var->bucket_counts = this->bucket_counts;
+			var->sum = this->sum;
+			var->count = this->count;
+		}
+
+		return var;
 	}
 
 	HistogramVar(const std::string& name, const std::string& help,

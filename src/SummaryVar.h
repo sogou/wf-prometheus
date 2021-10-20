@@ -50,11 +50,21 @@ public:
 	}
 
 public:
-	Var *create() override
+	Var *create(bool with_data) override
 	{
-		return new SummaryVar<TYPE>(this->name, this->help,
-									this->quantiles,
-									this->max_age, this->age_buckets);
+		SummaryVar<TYPE> *var = new SummaryVar<TYPE>(this->name,
+													 this->help,
+													 this->quantiles,
+													 this->max_age,
+													 this->age_buckets);
+		if (with_data)
+		{
+			var->sum = this->sum;
+			var->count = this->count;
+			var->quantile_values = this->quantile_values;
+		}
+
+		return var;
 	}
 
 	SummaryVar(const std::string& name, const std::string& help,
@@ -62,7 +72,7 @@ public:
 			   const std::chrono::milliseconds max_age, int age_bucket) :
 		Var(name, help, VAR_SUMMARY),
 		quantiles(quantile),
-		quantile_values(quantile, max_age, age_bucket)
+		quantile_values(&this->quantiles, max_age, age_bucket)
 	{
 		this->max_age = max_age;
 		this->age_buckets = age_bucket;

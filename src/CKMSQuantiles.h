@@ -37,7 +37,9 @@ private:
 	};
 
  public:
-	CKMSQuantiles(const std::vector<Quantile>& quantiles);
+	CKMSQuantiles(const std::vector<Quantile> *quantiles);
+	CKMSQuantiles<TYPE>& operator= (const CKMSQuantiles<TYPE>& copy);
+	CKMSQuantiles(const CKMSQuantiles<TYPE>& copy);
 
 	void insert(TYPE value);
 	TYPE get(double q);
@@ -50,7 +52,7 @@ private:
 	void compress();
 
  private:
-	const std::vector<Quantile>& quantiles;
+	const std::vector<Quantile> *quantiles;
 
 	size_t count;
 	std::vector<Item> sample;
@@ -69,12 +71,33 @@ CKMSQuantiles<TYPE>::Item::Item(TYPE val, int lower_del, int del)
 }
 
 template<typename TYPE>
-CKMSQuantiles<TYPE>::CKMSQuantiles(const std::vector<Quantile>& q) :
+CKMSQuantiles<TYPE>::CKMSQuantiles(const std::vector<Quantile> *q) :
 	quantiles(q)
 {
 	this->count = 0;
 	//this->buffer;
 	this->buffer_count = 0;
+}
+
+template<typename TYPE>
+CKMSQuantiles<TYPE>::CKMSQuantiles(const CKMSQuantiles<TYPE>& copy)
+{
+	this->operator= (copy);
+}
+
+template<typename TYPE>
+CKMSQuantiles<TYPE>& CKMSQuantiles<TYPE>::operator= (const CKMSQuantiles<TYPE>& copy)
+{
+	if (this != &copy)
+	{
+		this->quantiles = copy.quantiles;
+		this->count = copy.count;
+		this->sample = copy.sample;
+		this->buffer = copy.buffer;
+		this->buffer_count = copy.buffer_count;
+	}
+
+	return *this;
 }
 
 template<typename TYPE>
@@ -135,7 +158,7 @@ double CKMSQuantiles<TYPE>::allowable_error(int rank)
 	auto size = this->sample.size();
 	double min_error = size + 1;
 
-	for (const auto& q : this->quantiles)
+	for (const auto& q : *(this->quantiles))
 	{
 		double error;
 		if (rank <= q.quantile * size)
