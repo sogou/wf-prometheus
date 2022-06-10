@@ -16,6 +16,8 @@ base:
 
 ifeq ($(DEBUG),y)
 	cd $(BUILD_DIR) && $(CMAKE3) -D CMAKE_BUILD_TYPE=Debug $(ROOT_DIR)
+else ifneq ("${Workflow_DIR}workflow", "workflow")
+	cd $(BUILD_DIR) && $(CMAKE3) -DWorkflow_DIR:STRING=${Workflow_DIR} $(ROOT_DIR)
 else
 	cd $(BUILD_DIR) && $(CMAKE3) $(ROOT_DIR)
 endif

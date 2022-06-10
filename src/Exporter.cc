@@ -35,6 +35,7 @@ void PrometheusExporter::pull(WFHttpTask *task)
 		return;
 
 	VarFactory::gauge<int>("workflow_metrics_count")->increase();
+
 	body = VarFactory::expose();
 	task->get_resp()->append_output_body(std::move(body));
 
