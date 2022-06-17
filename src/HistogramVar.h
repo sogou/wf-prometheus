@@ -31,7 +31,7 @@ class HistogramVar : public Var
 {
 public:
 	void observe(const TYPE value);
-	bool observe_multi(const std::vector<TYPE>& multi, const TYPE sum);
+	bool observe_multi(const std::vector<size_t>& multi, const TYPE sum);
 
 	bool reduce(const void *ptr, size_t sz) override;
 	std::string collect() override;
@@ -100,7 +100,7 @@ void HistogramVar<TYPE>::observe(const TYPE value)
 }
 
 template<typename TYPE>
-bool HistogramVar<TYPE>::observe_multi(const std::vector<TYPE>& multi,
+bool HistogramVar<TYPE>::observe_multi(const std::vector<size_t>& multi,
 									   const TYPE sum)
 {
 	if (multi.size() != this->bucket_counts.size())
@@ -128,7 +128,6 @@ bool HistogramVar<TYPE>::reduce(const void *ptr, size_t sz)
 	for (size_t i = 0; i < sz; i++)
 		this->bucket_counts[i] += (*src_bucket_counts)[i];
 
-	this->bucket_counts[sz] += (*src_bucket_counts)[sz];
 	this->sum += data->get_sum();
 	this->count += data->get_count();
 

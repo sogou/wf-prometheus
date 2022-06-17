@@ -62,6 +62,8 @@ public:
 			var->sum = this->sum;
 			var->count = this->count;
 			var->quantile_values = this->quantile_values;
+			var->quantile_size = this->quantile_size;
+			var->quantile_out = this->quantile_out;
 		}
 
 		return var;
@@ -76,8 +78,13 @@ public:
 	{
 		this->max_age = max_age;
 		this->age_buckets = age_bucket;
-		this->quantile_out.resize(quantile.size(), 0);
-		this->available_count.resize(quantile.size(), 0);
+		this->quantile_size = this->quantiles.size(); // for output
+		if (this->quantiles[this->quantile_size - 1].quantile != 1.0)
+		{
+			struct Quantile q(1.0, 0.1);
+			this->quantiles.push_back(q);
+		}
+		this->quantile_out.resize(this->quantiles.size(), 0);
 		this->init();
 	}
 
@@ -88,22 +95,20 @@ public:
 	}
 
 private:
-	const std::vector<struct Quantile> quantiles;
+	std::vector<struct Quantile> quantiles;
 	TYPE sum;
 	size_t count;
+	size_t quantile_size;
 	std::chrono::milliseconds max_age;
 	int age_buckets;
 	TimeWindowQuantiles<TYPE> quantile_values;
 	std::vector<TYPE> quantile_out;
-	std::vector<size_t> available_count;
 };
 
 template<typename TYPE>
 void SummaryVar<TYPE>::observe(const TYPE value)
 {
 	this->quantile_values.insert(value);
-	this->sum += value;
-	this->count++;
 }
 
 template<typename TYPE>
@@ -115,18 +120,74 @@ bool SummaryVar<TYPE>::reduce(const void *ptr, size_t sz)
 	SummaryVar<TYPE> *data = (SummaryVar<TYPE> *)ptr;
 
 	TimeWindowQuantiles<TYPE> *src = data->get_quantile_values();
-	size_t available_count;
 	TYPE get_val;
+	size_t src_count = 0;
+	TYPE *src_value = new TYPE[sz]();
+	TYPE src_sum = src->get_sum();
 
-	for (size_t i = 0; i < sz; i ++)
+	for (size_t i = 0; i < sz; i++)
 	{
-		available_count = src->get(this->quantiles[i].quantile, &get_val);
-		this->quantile_out[i] += get_val * available_count;
-		this->available_count[i] += available_count;
+		src_count = src->get(this->quantiles[i].quantile, &get_val);
+		src_value[i] = get_val;
 	}
 
-	this->sum += data->get_sum();
-	this->count += data->get_count();
+	TYPE pilot;
+	size_t cnt;
+	size_t idx;
+	TYPE range;
+	TYPE count = 0;
+	TYPE value = 0;
+	size_t src_idx = 0;
+	size_t dst_idx = 0;
+	size_t total = this->count + src_count;
+	TYPE *out = new TYPE[sz]();
+
+	for (size_t i = 0; i < sz; i++)
+	{
+		pilot = this->quantiles[i].quantile * total;
+
+		while (count < pilot && src_idx < sz && dst_idx < sz)
+		{
+			if (this->quantile_out[dst_idx] <= src_value[src_idx])
+			{
+				value = this->quantile_out[dst_idx];
+				idx = dst_idx;
+				cnt = this->count;
+				dst_idx++;
+			}
+			else
+			{
+				value = src_value[src_idx];
+				idx = src_idx;
+				cnt = src_count;
+				src_idx++;
+			}
+
+			if (idx == 0)
+				range = this->quantiles[0].quantile;
+			else
+				range = this->quantiles[idx].quantile -
+						this->quantiles[idx - 1].quantile;
+
+			count += cnt * range;
+		}
+
+		if (count >= pilot)
+			out[i] = value;
+		else if (src_idx < sz)
+			out[i] = src_value[i];
+		else
+			out[i] = this->quantile_out[i];
+	}
+
+	for (size_t i = 0; i < sz; i++)
+		this->quantile_out[i] = out[i];
+
+	this->count = total;
+	this->sum += src_sum;
+
+	delete[] out;
+	delete[] src_value;
 
 	return true;
 }
@@ -136,7 +197,7 @@ std::string SummaryVar<TYPE>::collect()
 {
 	std::string ret;
 
-	for (size_t i = 0; i < this->quantiles.size(); i++)
+	for (size_t i = 0; i < this->quantile_size; i++)
 	{
 		ret += this->name + "{quantile=\"" +
 			   std::to_string(this->quantiles[i].quantile) + "\"} ";
@@ -144,8 +205,7 @@ std::string SummaryVar<TYPE>::collect()
 		if (this->quantile_out[i] == std::numeric_limits<TYPE>::quiet_NaN())
 			ret += "NaN";
 		else
-			ret += std::to_string(this->quantile_out[i] /
-								  this->available_count[i]);
+			ret += std::to_string(this->quantile_out[i]);
 		ret += "\n";
 	}
 
@@ -153,7 +213,6 @@ std::string SummaryVar<TYPE>::collect()
 	ret += this->name + "_count " + std::to_string(this->count) + "\n";
 
 	this->quantile_out.clear();
-	this->available_count.clear();
 
 	return std::move(ret);
 }

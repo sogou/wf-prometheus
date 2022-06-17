@@ -75,7 +75,7 @@ void VarGlobal::del(const VarLocal *var)
 	{
 		if (this->local_vars[i] == var)
 		{
-			for (size_t j = i; j < this->local_vars.size(); j++)
+			for (size_t j = i; j < this->local_vars.size() - 1; j++)
 				this->local_vars[j] = this->local_vars[j + 1];
 
 			break;
