@@ -16,6 +16,15 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC -pipe -std=c++11 -fno-exceptions")
 set(INC_DIR ${PROJECT_SOURCE_DIR}/_include CACHE PATH "workflow inc")
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/_lib CACHE PATH "workflow lib")
 
+find_library(LIBRT rt)
+find_package(OpenSSL REQUIRED)
+
+if (Workflow_DIR)
+    find_package(Workflow REQUIRED CONFIG HINTS ${Workflow_DIR})
+else ()
+    find_package(Workflow REQUIRED CONFIG)
+endif ()
+
 include_directories(${OPENSSL_INCLUDE_DIR} ${WORKFLOW_INCLUDE_DIR} ${INC_DIR})
 link_directories(${WORKFLOW_LIB_DIR})
 
@@ -67,9 +76,8 @@ install (
 )
 
 add_executable(example example.cc)
-find_library(LIBRT rt)
-find_package(OpenSSL REQUIRED)
-find_package(workflow REQUIRED)
 
-target_link_libraries(example ${PROJECT_NAME} workflow)
+target_link_libraries(example ${PROJECT_NAME}
+					  ${WORKFLOW_LIB_DIR}/libworkflow.a
+					  pthread ssl crypto)
 
