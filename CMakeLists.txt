@@ -77,7 +77,5 @@ install (
 
 add_executable(example example.cc)
 
-target_link_libraries(example ${PROJECT_NAME}
-					  ${WORKFLOW_LIB_DIR}/libworkflow.a
-					  pthread ssl crypto)
+target_link_libraries(example ${PROJECT_NAME} workflow pthread ssl crypto)
 

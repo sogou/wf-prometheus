@@ -4,7 +4,6 @@ MAKE_FILE := Makefile
 
 DEFAULT_BUILD_DIR := build.cmake
 BUILD_DIR := $(shell if [ -f $(MAKE_FILE) ]; then echo "."; else echo $(DEFAULT_BUILD_DIR); fi)
-CMAKE3 := $(shell if which cmake3>/dev/null ; then echo cmake3; else echo cmake; fi;)
 
 .PHONY: $(ALL_TARGETS)
 
@@ -15,11 +14,11 @@ base:
 	mkdir -p $(BUILD_DIR)
 
 ifeq ($(DEBUG),y)
-	cd $(BUILD_DIR) && $(CMAKE3) -D CMAKE_BUILD_TYPE=Debug $(ROOT_DIR)
+	cd $(BUILD_DIR) && cmake -D CMAKE_BUILD_TYPE=Debug $(ROOT_DIR)
 else ifneq ("${Workflow_DIR}workflow", "workflow")
-	cd $(BUILD_DIR) && $(CMAKE3) -DWorkflow_DIR:STRING=${Workflow_DIR} $(ROOT_DIR)
+	cd $(BUILD_DIR) && cmake -DWorkflow_DIR:STRING=${Workflow_DIR} $(ROOT_DIR)
 else
-	cd $(BUILD_DIR) && $(CMAKE3) $(ROOT_DIR)
+	cd $(BUILD_DIR) && cmake $(ROOT_DIR)
 endif
 
 clean:
