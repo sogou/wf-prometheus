@@ -16,6 +16,13 @@ cc_library(
 	visibility = ["//visibility:public"]
 )
 
+cc_library(
+	name = "wf-prometheus-hdrs",
+	hdrs = glob(['src/include/wf-prometheus/*']),
+	includes = ['src/include'],
+	visibility = ["//visibility:public"],
+)
+
 cc_binary(
 	name = "example",
 	srcs = ["example.cc"],
