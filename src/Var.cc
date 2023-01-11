@@ -33,22 +33,28 @@ VarLocal::~VarLocal()
 {
 	VarGlobal *global_var = VarGlobal::get_instance();
 
+	global_var->del(this);
 	global_var->dup(this->vars);
 
 	for (auto it = this->vars.begin(); it != this->vars.end(); it++)
 		delete it->second;
-
-	global_var->del(this);
 }
 
 void VarGlobal::dup(const std::unordered_map<std::string, Var *>& vars)
 {
+	VarLocal *local;
+
+	this->mutex.lock();
 	if (this->local_vars.empty())
-		new VarLocal();
+		local = NULL;
+	else
+		local = this->local_vars[0];
+	this->mutex.unlock();
 
-	VarLocal *local = this->local_vars[0];
+	if (local == NULL)
+		local = new VarLocal();
+
 	local->mutex.lock();
-
 	std::unordered_map<std::string, Var*>& local_var = local->vars;
 
 	for (auto it = vars.begin(); it != vars.end(); it++)
