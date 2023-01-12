@@ -112,7 +112,7 @@ bool CounterVar<TYPE>::reduce(const void *ptr, size_t)
 
 		if (my_it == this->data.end())
 		{
-			GaugeVar<TYPE> *var = new GaugeVar<TYPE>(it->first, "");
+			GaugeVar<TYPE> *var = static_cast<GaugeVar<TYPE> *>(it->second->create(true));
 			this->data.insert(std::make_pair(it->first, var));
 		}
 		else
