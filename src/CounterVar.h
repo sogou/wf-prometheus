@@ -52,8 +52,8 @@ public:
 			for (auto it = this->data.begin();
 				 it != this->data.end(); it++)
 			{
-				this->data.insert(std::make_pair(it->first,
-							   (GaugeVar<TYPE> *)it->second->create(true)));
+				var->data.insert(std::make_pair(it->first,
+								(GaugeVar<TYPE> *)it->second->create(true)));
 			}
 		}
 
