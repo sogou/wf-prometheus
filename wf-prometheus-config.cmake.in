@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+set(WF-PROMETHEUS_VERSION "@wf-prometheus_VERSION@")
+set_and_check(WF-PROMETHEUS_INCLUDE_DIR "@PACKAGE_CONFIG_INC_DIR@")
+set_and_check(WF-PROMETHEUS_LIB_DIR "@PACKAGE_CONFIG_LIB_DIR@")
+
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/wf-prometheus-targets.cmake")
+    include ("${CMAKE_CURRENT_LIST_DIR}/wf-prometheus-targets.cmake")
+endif ()
+
+check_required_components(wf-prometheus)
+
