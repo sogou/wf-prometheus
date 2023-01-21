@@ -15,6 +15,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC -pipe -std=c++11 -fno-exceptions")
 
 set(INC_DIR ${PROJECT_SOURCE_DIR}/_include CACHE PATH "workflow inc")
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/_lib CACHE PATH "workflow lib")
+set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 find_library(LIBRT rt)
 find_package(OpenSSL REQUIRED)
@@ -69,11 +70,37 @@ endforeach()
 
 add_subdirectory(src)
 
+### CONFIG
+
+include(CMakePackageConfigHelpers)
+set(CONFIG_INC_DIR ${INC_DIR})
+set(CONFIG_LIB_DIR ${LIB_DIR})
+configure_package_config_file(
+	${PROJECT_NAME}-config.cmake.in
+	${PROJECT_SOURCE_DIR}/${PROJECT_NAME}-config.cmake
+	INSTALL_DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+	PATH_VARS CONFIG_INC_DIR CONFIG_LIB_DIR
+)
+
+set(CMAKE_CONFIG_INSTALL_FILE ${PROJECT_BINARY_DIR}/config.toinstall.cmake)
+set(CONFIG_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+set(CONFIG_LIB_DIR ${CMAKE_INSTALL_LIBDIR})
+configure_package_config_file(
+	${PROJECT_NAME}-config.cmake.in
+	${CMAKE_CONFIG_INSTALL_FILE}
+	INSTALL_DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+	PATH_VARS CONFIG_INC_DIR CONFIG_LIB_DIR
+)
+
+### INSTALL
+
 install (
     FILES ${INCLUDE_HEADERS}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
     COMPONENT devel
 )
+
+### EXAMPLE
 
 add_executable(example example.cc)
 

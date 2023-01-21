@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_binary")
 
 cc_library(
-	name = "wf_prometheus",
+	name = "wf-prometheus",
 	hdrs = glob(["**/*.h"]),
 	srcs = glob(["src/*.cc"]),
 	deps = [
@@ -17,7 +17,7 @@ cc_library(
 )
 
 cc_library(
-	name = "wf_prometheus_hdrs",
+	name = "wf-prometheus_hdrs",
 	hdrs = glob(['src/include/wf-prometheus/*']),
 	includes = ['src/include'],
 	visibility = ["//visibility:public"],
@@ -28,7 +28,7 @@ cc_binary(
 	srcs = ["example.cc"],
 	copts = ["-Isrc/include/"],
 	deps = [
-		"//:wf_prometheus",
+		"//:wf-prometheus",
 		"@workflow//:http",
 		"@workflow//:upstream",
 	],

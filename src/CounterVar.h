@@ -52,8 +52,8 @@ public:
 			for (auto it = this->data.begin();
 				 it != this->data.end(); it++)
 			{
-				this->data.insert(std::make_pair(it->first,
-							   (GaugeVar<TYPE> *)it->second->create(true)));
+				var->data.insert(std::make_pair(it->first,
+								(GaugeVar<TYPE> *)it->second->create(true)));
 			}
 		}
 
@@ -112,7 +112,7 @@ bool CounterVar<TYPE>::reduce(const void *ptr, size_t)
 
 		if (my_it == this->data.end())
 		{
-			GaugeVar<TYPE> *var = new GaugeVar<TYPE>(it->first, "");
+			GaugeVar<TYPE> *var = static_cast<GaugeVar<TYPE> *>(it->second->create(true));
 			this->data.insert(std::make_pair(it->first, var));
 		}
 		else
